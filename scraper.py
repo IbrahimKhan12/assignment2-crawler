@@ -21,7 +21,7 @@ def extract_next_links(url, resp):
         return links
     if resp.raw_response is None:
         return links
-    if resp.raw_reponse.content is None:
+    if resp.raw_response.content is None:
         return links
     if len(resp.raw_response.content) == 0:
         return links
@@ -42,21 +42,41 @@ def is_valid(url):
     # If you decide to crawl it, return True; otherwise return False.
     # There are already some conditions that return False.
     try:
+        
+        # parse the url. example:
+        # urlparse("http://docs.python.org:80/3/library/urllib.parse.html?"
+        #     "highlight=params#url-parsing")
+        # ParseResult(scheme='http', netloc='docs.python.org:80',
+        #     path='/3/library/urllib.parse.html', params='',
+        #     query='highlight=params', fragment='url-parsing')
         parsed = urlparse(url)
 
+        # get rid of non http and https urls
         if parsed.scheme not in set(["http", "https"]):
             return False
         
-        if parsed.netloc.endswith(".ics.uci.edu") or parsed.netloc.endswith(".cs.uci.edu") or parsed.netloc.endswith(".informatics.uci.edu") or parsed.netloc.endswith(".stat.uci.edu") or (parsed.netloc.endswith("today.uci.edu") and parsed.path.startswith("/department/information_computer_sciences")):
-            return not re.match(
-                r".*\.(css|js|bmp|gif|jpe?g|ico"
-                + r"|png|tiff?|mid|mp2|mp3|mp4"
-                + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
-                + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
-                + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
-                + r"|epub|dll|cnf|tgz|sha1"
-                + r"|thmx|mso|arff|rtf|jar|csv"
-                + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower())
+        # get rid of anything outside our crawling conditions
+        if not (parsed.netloc.endswith(".ics.uci.edu") or
+            parsed.netloc.endswith(".cs.uci.edu") or
+            parsed.netloc.endswith(".informatics.uci.edu") or
+            parsed.netloc.endswith(".stat.uci.edu") or
+            (parsed.netloc.endswith("today.uci.edu") and parsed.path.startswith("/department/information_computer_sciences"))):
+            return False
+        
+        # get rid of useless files/pages
+        if re.match(
+            r".*\.(css|js|bmp|gif|jpe?g|ico"
+            + r"|png|tiff?|mid|mp2|mp3|mp4"
+            + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
+            + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
+            + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
+            + r"|epub|dll|cnf|tgz|sha1"
+            + r"|thmx|mso|arff|rtf|jar|csv"
+            + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower()):
+            return False
+        
+        # if none of the above apply return true
+        return True
 
 
     except TypeError:
