@@ -26,6 +26,7 @@ def extract_next_links(url, resp):
     if len(resp.raw_response.content) == 0:
         return links
     
+    # beautiful soup is HTML parser
     souped = BeautifulSoup(resp.raw_response.content, 'lxml')
 
     for thing in souped.find_all('a'):
@@ -77,7 +78,6 @@ def is_valid(url):
         
         # if none of the above apply return true
         return True
-
 
     except TypeError:
         print ("TypeError for ", parsed)
