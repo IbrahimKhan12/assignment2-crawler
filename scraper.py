@@ -34,7 +34,8 @@ def extract_next_links(url, resp):
         if href:
             href, fragment = urldefrag(href)
             new_url = urljoin(url, href)
-            links.append(new_url)
+            if new_url not in links:
+                links.append(new_url)
 
     return links
 
