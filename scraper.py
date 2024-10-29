@@ -16,7 +16,6 @@ def extract_next_links(url, resp):
     #         resp.raw_response.url: the url, again
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
-    links = set()
     if resp.status != 200:
         return []
     if resp.raw_response is None:
@@ -26,16 +25,19 @@ def extract_next_links(url, resp):
     if len(resp.raw_response.content) == 0:
         return []
     
+    # make it a set to avoid duplicates
+    links = set()
     # beautiful soup is HTML parser
     souped = BeautifulSoup(resp.raw_response.content, 'lxml')
 
-    for thing in souped.find_all('a'):
-        href = thing.get('href')
+    # save all a tags because they contain URLs
+    for atag in souped.find_all('a'):
+        href = atag.get('href')
         if href:
             href, fragment = urldefrag(href)
             new_url = urljoin(url, href)
             links.add(new_url)
-
+    # return the set as a list because that's how implementation is meant to be
     return list(links)
 
 def is_valid(url):
@@ -51,7 +53,7 @@ def is_valid(url):
         #     path='/3/library/urllib.parse.html', params='',
         #     query='highlight=params', fragment='url-parsing')
         parsed = urlparse(url)
-
+        
         # get rid of non http and https urls
         if parsed.scheme not in set(["http", "https"]):
             return False
@@ -61,7 +63,7 @@ def is_valid(url):
             parsed.netloc.endswith(".cs.uci.edu") or
             parsed.netloc.endswith(".informatics.uci.edu") or
             parsed.netloc.endswith(".stat.uci.edu") or
-            (parsed.netloc.endswith("today.uci.edu") and parsed.path.startswith("/department/information_computer_sciences"))):
+            (parsed.netloc.endswith(".today.uci.edu") and parsed.path.startswith("/department/information_computer_sciences"))):
             return False
         
         # get rid of useless files/pages
@@ -73,7 +75,7 @@ def is_valid(url):
             + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
             + r"|epub|dll|cnf|tgz|sha1"
             + r"|thmx|mso|arff|rtf|jar|csv"
-            + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower()):
+            + r"|rm|smil|wmv|swf|wma|zip|rar|gz|apk|war|img|sql)$", parsed.path.lower()):
             return False
         # if none of the above apply print and return true
         print(url)
