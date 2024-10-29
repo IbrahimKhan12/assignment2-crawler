@@ -77,8 +77,6 @@ def is_valid(url):
             + r"|thmx|mso|arff|rtf|jar|csv|txt"
             + r"|rm|smil|wmv|swf|wma|zip|rar|gz|apk|war|img|sql)$", parsed.path.lower()):
             return False
-        # if none of the above apply print and return true
-        print(url)
         return True
 
     except TypeError:
