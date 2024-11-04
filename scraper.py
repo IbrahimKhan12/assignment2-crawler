@@ -82,6 +82,18 @@ def is_valid(url):
             + r"|rm|smil|wmv|swf|wma|zip|rar|gz|apk|war|img|sql)$", parsed.path.lower()):
             return False
 
+	# get rid of too long URLs, prob traps
+	if len(url) > 1000:
+	    return False
+	path_segments = parsed.path.split('/')
+	segment_counts = {}
+	for segment in path_segments:
+	    if segment in segment_counts:
+	        segment_counts[segment] += 1
+	        if segment_counts[segment] >= 3:
+		     return False
+		else:
+		    segment_counts[segment] = 1
         return True
 
     except TypeError:
