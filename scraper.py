@@ -67,7 +67,7 @@ def is_valid(url):
             return False
         
         # get rid of traps i fell into
-        if "do=media" in parsed.query or "image=" in parsed.query or "ical=1" in parsed.query or "outlook-ical=1" in parsed.query or "tribe-bar-date" in parsed.query:
+        if any(param in parsed.query for param in ["do=media", "image=", "ical=1", "outlook-ical=1", "tribe-bar-date"]):
             return False
         
         # get rid of useless files/pages
@@ -82,18 +82,21 @@ def is_valid(url):
             + r"|rm|smil|wmv|swf|wma|zip|rar|gz|apk|war|img|sql)$", parsed.path.lower()):
             return False
 
-	# get rid of too long URLs, prob traps
-	if len(url) > 1000:
-	    return False
-	path_segments = parsed.path.split('/')
-	segment_counts = {}
-	for segment in path_segments:
-	    if segment in segment_counts:
-	        segment_counts[segment] += 1
-	        if segment_counts[segment] >= 3:
-		     return False
-		else:
-		    segment_counts[segment] = 1
+        # get rid of too long URLs, prob traps
+        if len(url) > 1000:
+            return False
+        
+        # if a url repeats a segment too much, fix it
+        path_segments = parsed.path.split('/')
+        segment_counts = {}
+        for segment in path_segments:
+            if segment in segment_counts:
+                segment_counts[segment] += 1
+                if segment_counts[segment] >= 3:
+                    return False
+            else:
+                segment_counts[segment] = 1
+
         return True
 
     except TypeError:
