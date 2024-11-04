@@ -66,6 +66,10 @@ def is_valid(url):
             (parsed.netloc.endswith(".today.uci.edu") and parsed.path.startswith("/department/information_computer_sciences"))):
             return False
         
+        # get rid of traps i fell into
+        if "do=media" in parsed.query or "image=" in parsed.query or "ical=1" in parsed.query or "outlook-ical=1" in parsed.query or "tribe-bar-date" in parsed.query:
+            return False
+        
         # get rid of useless files/pages
         if re.match(
             r".*\.(css|js|bmp|gif|jpe?g|ico"
@@ -77,6 +81,7 @@ def is_valid(url):
             + r"|thmx|mso|arff|rtf|jar|csv|ppsx"
             + r"|rm|smil|wmv|swf|wma|zip|rar|gz|apk|war|img|sql)$", parsed.path.lower()):
             return False
+
         return True
 
     except TypeError:
