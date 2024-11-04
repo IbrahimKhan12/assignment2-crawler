@@ -56,7 +56,7 @@ class Worker(Thread):
                 # Parse the content to extract words
                 words = self.get_words(resp.raw_response.content)
                 simhash = self.compute_simhash(words)
-                if self.stats.is_similar(simhash):
+                if self.stats.similar(simhash):
                     self.logger.info(f"Page {tbd_url} is similar to an already seen page, skipping.")
                     continue  # Skip processing this page
                 self.stats.add_simhash(simhash)
