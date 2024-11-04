@@ -1,3 +1,4 @@
+import hashlib
 import scraper
 import time
 import re
@@ -54,11 +55,13 @@ class Worker(Thread):
             if resp.status == 200 and resp.raw_response and resp.raw_response.content:
                 # Parse the content to extract words
                 words = self.get_words(resp.raw_response.content)
-                # Update word counts
+                simhash = self.compute_simhash(words)
+                if self.stats.is_similar(simhash):
+                    self.logger.info(f"Page {tbd_url} is similar to an already seen page, skipping.")
+                    continue  # Skip processing this page
+                self.stats.add_simhash(simhash)
                 self.stats.add_words(words)
-                # Update longest page if applicable
-                word_count = len(words)
-                self.stats.update_longest_page(tbd_url, word_count)
+                self.stats.update_longest_page(tbd_url, len(words))
 
             time.sleep(self.config.time_delay)
 
@@ -68,3 +71,23 @@ class Worker(Thread):
         words = re.findall(r'\b[a-zA-Z]{2,}\b', text.lower())
         words = [word for word in words if word not in stopwords]
         return words
+    
+    def compute_simhash(self, words):
+        hash_bits = 64
+        v = [0] * hash_bits
+        for word in words:
+            # Hash the word into an integer
+            hash_value = int(hashlib.md5(word.encode('utf-8')).hexdigest(), 16)
+            for i in range(hash_bits):
+                bitmask = 1 << i
+                if hash_value & bitmask:
+                    v[i] += 1
+                else:
+                    v[i] -= 1
+        fingerprint = 0
+        for i in range(hash_bits):
+            if v[i] >= 0:
+                fingerprint |= 1 << i
+        return fingerprint
+
+    

@@ -7,6 +7,24 @@ class Stats:
         self.longest_page_words = 0
         self.word_counts = {}
         self.subdomains = {}
+        self.simhashes = []
+
+    def similar(self, simhash, threshold=3):
+        for existing_simhash in self.simhashes:
+            if self.hamming_distance(simhash, existing_simhash) <= threshold:
+                return True
+        return False
+
+    def hamming_distance(self, hash1, hash2):
+        x = hash1 ^ hash2
+        dist = 0
+        while x:
+            dist += 1
+            x &= x - 1
+        return dist
+
+    def add_simhash(self, simhash):
+        self.simhashes.append(simhash)
         
     def add_url(self, url):
         url, _ = urldefrag(url)
