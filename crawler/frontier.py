@@ -6,6 +6,7 @@ from queue import Queue, Empty
 
 from utils import get_logger, get_urlhash, normalize
 from scraper import is_valid
+from urllib.parse import urldefrag
 
 class Frontier(object):
     def __init__(self, config, restart):
@@ -54,6 +55,7 @@ class Frontier(object):
             return None
 
     def add_url(self, url):
+        url, _ = urldefrag(url)
         url = normalize(url)
         urlhash = get_urlhash(url)
         if urlhash not in self.save:

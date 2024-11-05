@@ -52,14 +52,15 @@ class Worker(Thread):
                 # Parse the content to extract words
                 words = self.get_words(resp.raw_response.content)
                 simhash = self.compute_simhash(words)
+                # Add the URL to statistics before checking similarity
+                self.stats.add_url(tbd_url)
                 if self.stats.similar(simhash):
                     self.logger.info(f"Page {tbd_url} is similar to an already seen page, skipping.")
                     continue  # Skip processing this page
                 self.stats.add_simhash(simhash)
                 self.stats.add_words(words)
                 self.stats.update_longest_page(tbd_url, len(words))
-                self.stats.add_url(tbd_url)
-                # only scrape unique pages
+                # Only scrape unique pages
                 scraped_urls = scraper.scraper(tbd_url, resp)
                 for scraped_url in scraped_urls:
                     self.frontier.add_url(scraped_url)
