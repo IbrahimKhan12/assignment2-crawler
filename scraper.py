@@ -7,7 +7,6 @@ def scraper(url, resp):
     return [link for link in links if is_valid(link)]
 
 def extract_next_links(url, resp):
-    # Implementation required.
     # url: the URL that was used to get the page
     # resp.url: the actual url of the page
     # resp.status: the status code returned by the server. 200 is OK, you got the page. Other numbers mean that there was some kind of problem.
@@ -59,11 +58,11 @@ def is_valid(url):
             return False
         
         # get rid of anything outside our crawling conditions
-        if not (parsed.netloc.endswith(".ics.uci.edu") or
-            parsed.netloc.endswith(".cs.uci.edu") or
-            parsed.netloc.endswith(".informatics.uci.edu") or
-            parsed.netloc.endswith(".stat.uci.edu") or
-            (parsed.netloc.endswith(".today.uci.edu") and parsed.path.startswith("/department/information_computer_sciences"))):
+        if not (parsed.netloc.endswith("ics.uci.edu") or
+            parsed.netloc.endswith("cs.uci.edu") or
+            parsed.netloc.endswith("informatics.uci.edu") or
+            parsed.netloc.endswith("stat.uci.edu") or
+            (parsed.netloc.endswith("today.uci.edu") and parsed.path.startswith("/department/information_computer_sciences"))):
             return False
         
         # get rid of traps i fell into
