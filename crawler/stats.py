@@ -32,9 +32,13 @@ class Stats:
             self.unique_urls.add(url)
             parsed = urlparse(url)
             if parsed.netloc.endswith(".uci.edu"):
-                subdomain = parsed.netloc.lower()
+                parts = parsed.netloc.lower().split('.')
+                if len(parts) >= 3:
+                    subdomain = '.'.join(parts[-3:])
+                else:
+                    subdomain = parsed.netloc.lower()
                 self.subdomains[subdomain] = self.subdomains.get(subdomain, 0) + 1
-    
+
     def update_longest_page(self, url, word_count):
         if word_count > self.longest_page_words:
             self.longest_page_words = word_count

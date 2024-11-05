@@ -77,7 +77,6 @@ class Worker(Thread):
         hash_bits = 64
         v = [0] * hash_bits
         for word in words:
-            # Hash the word into an integer
             hash_value = int(hashlib.md5(word.encode('utf-8')).hexdigest(), 16)
             for i in range(hash_bits):
                 bitmask = 1 << i
@@ -90,5 +89,3 @@ class Worker(Thread):
             if v[i] >= 0:
                 fingerprint |= 1 << i
         return fingerprint
-
-    
