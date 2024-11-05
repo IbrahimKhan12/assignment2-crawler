@@ -59,14 +59,14 @@ def is_valid(url):
         
         # get rid of anything outside our crawling conditions
         if not (parsed.netloc.endswith("ics.uci.edu") or
-            parsed.netloc.endswith("cs.uci.edu") or
+            parsed.netloc.endswith(".cs.uci.edu") or
             parsed.netloc.endswith("informatics.uci.edu") or
             parsed.netloc.endswith("stat.uci.edu") or
             (parsed.netloc.endswith("today.uci.edu") and parsed.path.startswith("/department/information_computer_sciences"))):
             return False
         
         # get rid of traps i fell into
-        if any(param in parsed.query for param in ["do=media", "image=", "ical=1", "outlook-ical=1", "tribe-bar-date"]):
+        if any(param in parsed.query for param in ["do=media", "image=", "ical=1", "outlook-ical=1", "tribe-bar-date", "view=", "action=", "controller=", "share=", "filter", "redirect", "rev"]) or any(param in parsed.path for param in ["/-/commit", "/-/blob", "/-/blame", "/-/tree"]):
             return False
         
         # get rid of useless files/pages
@@ -76,8 +76,8 @@ def is_valid(url):
             + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
             + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
             + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
-            + r"|epub|dll|cnf|tgz|sha1|txt"
-            + r"|thmx|mso|arff|rtf|jar|csv|ppsx"
+            + r"|epub|dll|cnf|tgz|sha1|txt|cpp|py"
+            + r"|thmx|mso|arff|rtf|jar|csv|ppsx|java"
             + r"|rm|smil|wmv|swf|wma|zip|rar|gz|apk|war|img|sql)$", parsed.path.lower()):
             return False
 
@@ -91,7 +91,7 @@ def is_valid(url):
         for segment in path_segments:
             if segment in segment_counts:
                 segment_counts[segment] += 1
-                if segment_counts[segment] >= 3:
+                if segment_counts[segment] >= 3 or segment == "lvds":
                     return False
             else:
                 segment_counts[segment] = 1

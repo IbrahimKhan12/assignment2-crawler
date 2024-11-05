@@ -1,0 +1,64 @@
+Number of unique pages: 21547
+
+Longest page: http://www.ics.uci.edu/~eppstein/pubs/pubs.ff (29575 words)
+
+50 most common words:
+  research: 38852
+  ics: 29854
+  student: 23558
+  science: 22881
+  computer: 21423
+  uci: 20520
+  learning: 19194
+  graduate: 17722
+  data: 16693
+  undergraduate: 16600
+  news: 16007
+  students: 15019
+  informatics: 14444
+  next: 13481
+  us: 13254
+  view: 12464
+  technical: 12322
+  information: 12124
+  image: 11183
+  details: 11094
+  will: 11033
+  size: 10936
+  prev: 10901
+  original: 10772
+  can: 10748
+  events: 10437
+  taken: 10358
+  october: 10349
+  community: 10261
+  software: 10090
+  iso: 10032
+  school: 9978
+  machine: 9624
+  faculty: 9587
+  alumni: 9365
+  computing: 9151
+  one: 8699
+  irvine: 8672
+  future: 8490
+  canon: 8363
+  physics: 8358
+  eos: 8339
+  equiv: 8311
+  systems: 8189
+  may: 8132
+  spotlights: 8057
+  programs: 7894
+  search: 7781
+  statistics: 7690
+  university: 7508
+
+Subdomains under uci.edu:
+  cs.uci.edu, 14
+  economics.uci.edu, 272
+  ics.uci.edu, 19320
+  informatics.uci.edu, 694
+  linguistics.uci.edu, 61
+  physics.uci.edu, 1062
+  stat.uci.edu, 124
