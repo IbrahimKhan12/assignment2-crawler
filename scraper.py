@@ -33,7 +33,7 @@ def extract_next_links(url, resp):
     for atag in souped.find_all('a'):
         href = atag.get('href')
         if href:
-            href, fragment = urldefrag(href)
+            href, _ = urldefrag(href)
             new_url = urljoin(url, href)
             links.add(new_url)
     # return the set as a list because that's how implementation is meant to be
@@ -66,10 +66,10 @@ def is_valid(url):
             return False
         
         # get rid of traps i fell into
-        if any(param in parsed.query for param in ["do=media", "image=", "ical=1", "outlook-ical=1", "tribe-bar-date", "redirect", "share="]):
+        if any(param in parsed.query for param in ["do=media", "image=", "ical=1", "outlook-ical=1", "tribe-bar-date", "redirect", "share=", "filter"]):
             return False
         
-        if any(param in parsed.path for param in ["/-/commit", "/-/blob", "/-/blame", "/-/tree", "/doku.php/projects"]):
+        if any(param in parsed.path for param in ["/-/commit", "/-/blob", "/-/blame", "/-/tree", "/doku.php/project", "/doku.php/virtual_environments"]):
             return False
 
         # get rid of useless files/pages
