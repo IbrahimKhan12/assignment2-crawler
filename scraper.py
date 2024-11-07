@@ -66,9 +66,12 @@ def is_valid(url):
             return False
         
         # get rid of traps i fell into
-        if any(param in parsed.query for param in ["do=media", "image=", "ical=1", "outlook-ical=1", "tribe-bar-date", "view=", "action=", "controller=", "share=", "filter", "redirect", "rev"]) or any(param in parsed.path for param in ["/-/commit", "/-/blob", "/-/blame", "/-/tree"]):
+        if any(param in parsed.query for param in ["do=media", "image=", "ical=1", "outlook-ical=1", "tribe-bar-date", "redirect"]):
             return False
         
+        if any(param in parsed.path for param in ["/-/commit", "/-/blob", "/-/blame", "/-/tree", "/doku.php/projects"]):
+            return False
+
         # get rid of useless files/pages
         if re.match(
             r".*\.(css|js|bmp|gif|jpe?g|ico"
@@ -76,7 +79,7 @@ def is_valid(url):
             + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
             + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
             + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
-            + r"|epub|dll|cnf|tgz|sha1|txt|cpp|py"
+            + r"|epub|dll|cnf|tgz|sha1|txt|py|ff|cpp"
             + r"|thmx|mso|arff|rtf|jar|csv|ppsx|java"
             + r"|rm|smil|wmv|swf|wma|zip|rar|gz|apk|war|img|sql)$", parsed.path.lower()):
             return False
@@ -91,7 +94,7 @@ def is_valid(url):
         for segment in path_segments:
             if segment in segment_counts:
                 segment_counts[segment] += 1
-                if segment_counts[segment] >= 3 or segment == "lvds":
+                if segment_counts[segment] >= 3:
                     return False
             else:
                 segment_counts[segment] = 1

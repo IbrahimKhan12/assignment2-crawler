@@ -24,10 +24,9 @@ def get_logger(name, filename=None):
 
 def get_urlhash(url):
     parsed = urlparse(url)
-    # everything other than scheme.
     return sha256(
         f"{parsed.netloc}/{parsed.path}/{parsed.params}/"
-        f"{parsed.query}/{parsed.fragment}".encode("utf-8")).hexdigest()
+        f"{parsed.query}".encode("utf-8")).hexdigest()
 
 def normalize(url):
     if url.endswith("/"):
