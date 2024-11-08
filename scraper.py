@@ -58,8 +58,8 @@ def is_valid(url):
             return False
         
         # get rid of anything outside our crawling conditions
-        if not (parsed.netloc.endswith("ics.uci.edu") or
-            parsed.netloc.endswith(".cs.uci.edu") or
+        if not (parsed.netloc.endswith(".ics.uci.edu") or parsed.path.startswith("ics.uci.edu") or
+            parsed.netloc.endswith(".cs.uci.edu") or parsed.path.startswith("cs.uci.edu") or
             parsed.netloc.endswith("informatics.uci.edu") or
             parsed.netloc.endswith("stat.uci.edu") or
             (parsed.netloc.endswith("today.uci.edu") and parsed.path.startswith("/department/information_computer_sciences"))):
@@ -69,13 +69,13 @@ def is_valid(url):
         if any(param in parsed.query for param in ["do=media", "image=", "ical=1", "outlook-ical=1", "tribe-bar-date", "redirect", "share=", "filter", "action=download", "action=login"]):
             return False
         
-        if any(param in parsed.path for param in ["/-/commit", "/-/blob", "/-/blame", "/-/tree", "/doku.php/"]):
+        if any(param in parsed.path for param in ["/-/commit", "/-/blob", "/-/blame", "/-/tree", "/doku.php/", "~eppstein/pix/"]):
             return False
 
         # get rid of useless files/pages
         if re.match(
-            r".*\.(css|js|bmp|gif|jpe?g|ico"
-            + r"|png|tiff?|mid|mp2|mp3|mp4|mpg"
+            r".*\.(css|js|bmp|gif|jpe?g|ico|grm|psp"
+            + r"|png|tiff?|mid|mp2|mp3|mp4|mpg|scm|bib"
             + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
             + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
             + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
