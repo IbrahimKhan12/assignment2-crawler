@@ -69,7 +69,7 @@ def is_valid(url):
         if any(param in parsed.query for param in ["do=media", "image=", "ical=1", "outlook-ical=1", "tribe-bar-date", "redirect", "share=", "filter"]):
             return False
         
-        if any(param in parsed.path for param in ["/-/commit", "/-/blob", "/-/blame", "/-/tree", "/doku.php/project", "/doku.php/virtual_environments"]):
+        if any(param in parsed.path for param in ["/-/commit", "/-/blob", "/-/blame", "/-/tree", "/doku.php/"]):
             return False
 
         # get rid of useless files/pages
