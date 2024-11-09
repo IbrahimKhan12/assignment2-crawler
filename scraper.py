@@ -69,7 +69,7 @@ def is_valid(url):
         if any(param in parsed.query for param in ["do=media", "image=", "ical=1", "outlook-ical=1", "tribe-bar-date", "redirect", "share=", "filter", "action=download", "action=login", "idx="]):
             return False
         
-        if any(param in parsed.path for param in ["/-/commit", "/-/blob", "/-/blame", "/-/tree", "~eppstein/pix/"]):
+        if any(param in parsed.path for param in ["/-/commit", "/-/blob", "/-/blame", "/-/tree", "/-/merge_requests", "~eppstein/pix/"]):
             return False
 
         # get rid of useless files/pages
@@ -79,8 +79,8 @@ def is_valid(url):
             + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
             + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
             + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
-            + r"|epub|dll|cnf|tgz|sha1|txt|py|ff|cpp"
-            + r"|thmx|mso|arff|rtf|jar|csv|ppsx|java"
+            + r"|epub|dll|cnf|tgz|sha1|txt|py|ff|cpp|md"
+            + r"|thmx|mso|arff|rtf|jar|csv|ppsx|java|patch"
             + r"|rm|smil|wmv|swf|wma|zip|rar|gz|apk|war|img|sql)$", parsed.path.lower()):
             return False
 
