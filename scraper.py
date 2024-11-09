@@ -66,7 +66,7 @@ def is_valid(url):
             return False
         
         # get rid of traps i fell into
-        if any(param in parsed.query for param in ["do=media", "image=", "ical=1", "outlook-ical=1", "tribe-bar-date", "redirect", "share=", "filter", "action=download", "action=login", "idx="]):
+        if any(param in parsed.query for param in ["do=media", "image=", "ical=1", "outlook-ical=1", "tribe-bar-date", "redirect", "share=", "filter", "action=download", "action=login", "idx=", "version="]):
             return False
         
         if any(param in parsed.path for param in ["/-/commit", "/-/blob", "/-/blame", "/-/tree", "/-/merge_requests", "~eppstein/pix/"]):
@@ -74,7 +74,7 @@ def is_valid(url):
 
         # get rid of useless files/pages
         if re.match(
-            r".*\.(css|js|bmp|gif|jpe?g|ico|grm|psp"
+            r".*\.(css|js|bmp|gif|jpe?g|ico|grm|psp|git"
             + r"|png|tiff?|mid|mp2|mp3|mp4|mpg|scm|bib"
             + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
             + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
