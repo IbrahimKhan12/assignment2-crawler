@@ -66,10 +66,10 @@ def is_valid(url):
             return False
         
         # get rid of traps i fell into
-        if any(param in parsed.query for param in ["do=media", "image=", "ical=1", "outlook-ical=1", "tribe-bar-date", "redirect", "share=", "filter", "action=download", "action=login", "idx=", "version=", "precision="]):
+        if any(param in parsed.query for param in ["do=media", "image=", "ical=1", "outlook-ical=1", "tribe-bar-date", "redirect", "share=", "filter", "action=download", "action=login", "idx=", "version=", "precision=", "rev="]):
             return False
         
-        if any(param in parsed.path for param in ["/-/commit", "/-/blob", "/-/blame", "/-/tree", "/-/merge_requests", "~eppstein/pix/"]):
+        if any(param in parsed.path for param in ["/-/commit", "/-/blob", "/-/blame", "/-/tree", "/-/branches", "/-/forks", "/-/merge_requests", "~eppstein/pix/"]):
             return False
 
         # get rid of useless files
