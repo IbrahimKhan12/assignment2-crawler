@@ -72,14 +72,14 @@ def is_valid(url):
         if any(param in parsed.path for param in ["/-/commit", "/-/blob", "/-/blame", "/-/tree", "/-/merge_requests", "~eppstein/pix/"]):
             return False
 
-        # get rid of useless files/pages
+        # get rid of useless files
         if re.match(
             r".*\.(css|js|bmp|gif|jpe?g|ico|grm|psp|git"
-            + r"|png|tiff?|mid|mp2|mp3|mp4|mpg|scm|bib"
+            + r"|png|tiff?|mid|mp2|mp3|mp4|mpg|scm|bib|h"
             + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
             + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
             + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
-            + r"|epub|dll|cnf|tgz|sha1|txt|py|ff|cpp|md"
+            + r"|epub|dll|cnf|tgz|sha1|txt|py|ff|cpp|md|cp"
             + r"|thmx|mso|arff|rtf|jar|csv|ppsx|java|patch"
             + r"|rm|smil|wmv|swf|wma|zip|rar|gz|apk|war|img|sql)$", parsed.path.lower()):
             return False
