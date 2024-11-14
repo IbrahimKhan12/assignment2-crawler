@@ -1,23 +1,19 @@
 from urllib.parse import urldefrag, urlparse
 import threading
-from collections import defaultdict
-import bisect
 
 class Stats:
     def __init__(self):
         self.unique_urls = set()
         self.longest_page = ''
         self.longest_page_words = 0
-        self.word_counts = defaultdict(int)
-        self.subdomains = defaultdict(int)
+        self.word_counts = {}
+        self.subdomains = {}
         self.simhashes = []
         self.lock = threading.Lock()
 
     def similar(self, simhash, threshold=3):
         with self.lock:
-            index = bisect.bisect_left(self.simhashes, simhash)
-            for i in range(max(0, index - 5), min(len(self.simhashes), index + 5)):
-                existing_simhash = self.simhashes[i]
+            for existing_simhash in self.simhashes:
                 if self.hamming_distance(simhash, existing_simhash) <= threshold:
                     return True
         return False
@@ -32,7 +28,7 @@ class Stats:
 
     def add_simhash(self, simhash):
         with self.lock:
-            bisect.insort(self.simhashes, simhash)
+            self.simhashes.append(simhash)
         
     def add_url(self, url):
         url, _ = urldefrag(url)
@@ -46,7 +42,7 @@ class Stats:
                         subdomain = '.'.join(parts[-3:])
                     else:
                         subdomain = parsed.netloc.lower()
-                    self.subdomains[subdomain] += 1
+                    self.subdomains[subdomain] = self.subdomains.get(subdomain, 0) + 1
 
     def update_longest_page(self, url, word_count):
         with self.lock:
@@ -57,7 +53,10 @@ class Stats:
     def add_words(self, words):
         with self.lock:
             for word in words:
-                self.word_counts[word] += 1
+                if word in self.word_counts:
+                    self.word_counts[word] += 1
+                else:
+                    self.word_counts[word] = 1
     
     def get_unique_pages(self):
         with self.lock:
@@ -69,7 +68,8 @@ class Stats:
     
     def get_top_50(self):
         with self.lock:
-            return sorted(self.word_counts.items(), key=lambda x: x[1], reverse=True)[:50]
+            sorted_words = sorted(self.word_counts.items(), key=lambda x: x[1], reverse=True)
+            return sorted_words[:50]
     
     def get_subdomains(self):
         with self.lock:

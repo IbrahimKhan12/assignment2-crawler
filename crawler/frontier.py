@@ -5,7 +5,6 @@ import time
 from utils import get_logger, get_urlhash, normalize
 from scraper import is_valid
 from urllib.parse import urldefrag, urlparse
-import heapq
 
 class Frontier(object):
     def __init__(self, config, restart):
@@ -15,9 +14,8 @@ class Frontier(object):
         self.condition = threading.Condition(self.lock)
         self.domain_queues = {}
         self.last_access_time = {}
-        self.available_domains = []  # Heap to track next available time per domain
-        self.save_lock = threading.Lock()
-
+        self.save_lock = threading.Lock()  # Added lock for self.save
+        
         if not os.path.exists(self.config.save_file) and not restart:
             self.logger.info(
                 f"Did not find save file {self.config.save_file}, "
@@ -50,32 +48,32 @@ class Frontier(object):
     def get_tbd_url(self):
         with self.condition:
             while True:
+                earliest_time = None
                 current_time = time.time()
-                if not self.available_domains and not any(self.domain_queues.values()):
-                    # Frontier is empty
-                    return None
-
-                while self.available_domains:
-                    next_available_time, domain = heapq.heappop(self.available_domains)
-                    if domain not in self.domain_queues or not self.domain_queues[domain]:
-                        continue  # No URLs left for this domain
-                    if current_time >= next_available_time:
-                        url = self.domain_queues[domain].pop(0)
-                        self.last_access_time[domain] = current_time
-                        # If there are more URLs in the domain, push the next available time
-                        if self.domain_queues[domain]:
-                            heapq.heappush(self.available_domains, (current_time + self.config.time_delay, domain))
-                        return url
-                    else:
-                        # Not yet time to crawl this domain
-                        heapq.heappush(self.available_domains, (next_available_time, domain))
-                        sleep_time = next_available_time - current_time
+                for domain in list(self.domain_queues.keys()):
+                    if self.domain_queues[domain]:
+                        last_time = self.last_access_time.get(domain, 0)
+                        wait_time = self.config.time_delay - (current_time - last_time)
+                        if wait_time <= 0:
+                            url = self.domain_queues[domain].pop(0)
+                            self.last_access_time[domain] = time.time()
+                            return url
+                        else:
+                            next_available_time = last_time + self.config.time_delay
+                            if earliest_time is None or next_available_time < earliest_time:
+                                earliest_time = next_available_time
+                if earliest_time is not None:
+                    sleep_time = earliest_time - time.time()
+                    if sleep_time > 0:
                         self.condition.wait(timeout=sleep_time)
-                        break
-
-                if not self.available_domains:
-                    self.condition.wait()
-
+                    else:
+                        continue
+                else:
+                    if all(not q for q in self.domain_queues.values()):
+                        return None
+                    else:
+                        self.condition.wait()
+    
     def add_url(self, url):
         url, _ = urldefrag(url)
         url = normalize(url)
@@ -92,11 +90,8 @@ class Frontier(object):
             with self.save_lock:
                 self.save[urlhash] = (url, False)
                 self.save.sync()
-            if domain not in [d for _, d in self.available_domains]:
-                next_available = self.last_access_time.get(domain, 0)
-                heapq.heappush(self.available_domains, (next_available, domain))
             self.condition.notify_all()
-
+    
     def mark_url_complete(self, url):
         urlhash = get_urlhash(url)
         with self.save_lock:
