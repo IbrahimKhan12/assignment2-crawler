@@ -7,10 +7,7 @@ from utils import get_logger
 from crawler.stats import Stats
 from bs4 import BeautifulSoup
 import re
-import nltk
-nltk.download('stopwords')
 from nltk.corpus import stopwords
-
 stop_words = set(stopwords.words('english'))
 
 class Worker(Thread):
@@ -38,20 +35,23 @@ class Worker(Thread):
             if resp.status == 200 and resp.raw_response and resp.raw_response.content:
                 # Parse the content to extract words
                 words = self.get_words(resp.raw_response.content)
+                if len(words) < 50:
+                    self.logger.info(f"Page {tbd_url} ignored due to low word count ({len(words)}).")
+                    continue
                 simhash = self.compute_simhash(words)
-                # Add the URL to statistics before checking similarity
-                self.stats.add_url(tbd_url)
+                # Check for similarity before adding to statistics
                 if self.stats.similar(simhash):
                     self.logger.info(f"Page {tbd_url} is similar to an already seen page, skipping.")
-                    continue  # Skip processing this page
+                    continue
+                # Update stats after confirming uniqueness
+                self.stats.add_url(tbd_url)
                 self.stats.add_simhash(simhash)
                 self.stats.add_words(words)
                 self.stats.update_longest_page(tbd_url, len(words))
-                # Only scrape unique pages
+                # Add scraped URLs to the frontier
                 scraped_urls = scraper.scraper(tbd_url, resp)
                 for scraped_url in scraped_urls:
                     self.frontier.add_url(scraped_url)
-            # Removed time.sleep(self.config.time_delay)
     
     def get_words(self, content):
         soup = BeautifulSoup(content, 'lxml')
