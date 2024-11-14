@@ -19,7 +19,9 @@ class Stats:
 
     def similar(self, simhash, threshold=3):
         with self.simhash_lock:
-            for existing_simhash in self.simhashes:
+            index = bisect.bisect_left(self.simhashes, simhash)
+            for i in range(max(0, index - 5), min(len(self.simhashes), index + 5)):
+                existing_simhash = self.simhashes[i]
                 if self.hamming_distance(simhash, existing_simhash) <= threshold:
                     return True
             return False
@@ -34,7 +36,7 @@ class Stats:
 
     def add_simhash(self, simhash):
         with self.simhash_lock:
-            self.simhashes.append(simhash)
+            bisect.insort(self.simhashes, simhash)
         
     def add_url(self, url):
         url, _ = urldefrag(url)

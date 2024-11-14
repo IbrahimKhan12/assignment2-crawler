@@ -30,20 +30,17 @@ class Worker(Thread):
                 f"Downloaded {tbd_url}, status <{resp.status}>, "
                 f"using cache {self.config.cache_server}.")
             self.frontier.mark_url_complete(tbd_url)
+            parsed = urlparse(tbd_url)
+            domain = parsed.netloc
+            self.frontier.mark_domain_done(domain)
             if resp.status == 200 and resp.raw_response and resp.raw_response.content:
                 words = self.get_words(resp.raw_response.content)
                 if len(words) < 50:
                     self.logger.info(f"Page {tbd_url} ignored due to low word count ({len(words)}).")
-                    parsed = urlparse(tbd_url)
-                    domain = parsed.netloc
-                    self.frontier.mark_domain_done(domain)
                     continue
                 simhash = self.compute_simhash(words)
                 if self.stats.similar(simhash):
                     self.logger.info(f"Page {tbd_url} is similar to an already seen page, skipping.")
-                    parsed = urlparse(tbd_url)
-                    domain = parsed.netloc
-                    self.frontier.mark_domain_done(domain)
                     continue
                 self.stats.add_url(tbd_url)
                 self.stats.add_simhash(simhash)
@@ -52,14 +49,8 @@ class Worker(Thread):
                 scraped_urls = scraper.scraper(tbd_url, resp)
                 for scraped_url in scraped_urls:
                     self.frontier.add_url(scraped_url)
-                parsed = urlparse(tbd_url)
-                domain = parsed.netloc
-                self.frontier.mark_domain_done(domain)
             else:
                 self.logger.info(f"Skipping URL {tbd_url} due to status {resp.status}.")
-                parsed = urlparse(tbd_url)
-                domain = parsed.netloc
-                self.frontier.mark_domain_done(domain)
                 continue
 
     def get_words(self, content):
