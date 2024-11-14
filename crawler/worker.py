@@ -1,14 +1,13 @@
 import hashlib
-import re
 import scraper
-from bs4 import BeautifulSoup
-from crawler.stats import Stats
-from nltk.corpus import stopwords
 from threading import Thread
-from urllib.parse import urlparse
-from utils import get_logger
+from inspect import getsource
 from utils.download import download
-
+from utils import get_logger
+from crawler.stats import Stats
+from bs4 import BeautifulSoup
+import re
+from nltk.corpus import stopwords
 stop_words = set(stopwords.words('english'))
 
 class Worker(Thread):
@@ -17,6 +16,9 @@ class Worker(Thread):
         self.config = config
         self.frontier = frontier
         self.stats = stats
+        # basic check for requests in scraper
+        assert {getsource(scraper).find(req) for req in {"from requests import", "import requests"}} == {-1}, "Do not use requests in scraper.py"
+        assert {getsource(scraper).find(req) for req in {"from urllib.request import", "import urllib.request"}} == {-1}, "Do not use urllib.request in scraper.py"
         super().__init__(daemon=True)
         
     def run(self):
@@ -30,29 +32,27 @@ class Worker(Thread):
                 f"Downloaded {tbd_url}, status <{resp.status}>, "
                 f"using cache {self.config.cache_server}.")
             self.frontier.mark_url_complete(tbd_url)
-            parsed = urlparse(tbd_url)
-            domain = parsed.netloc
-            self.frontier.mark_domain_done(domain)
             if resp.status == 200 and resp.raw_response and resp.raw_response.content:
+                # Parse the content to extract words
                 words = self.get_words(resp.raw_response.content)
                 if len(words) < 50:
                     self.logger.info(f"Page {tbd_url} ignored due to low word count ({len(words)}).")
                     continue
                 simhash = self.compute_simhash(words)
+                # Check for similarity before adding to statistics
                 if self.stats.similar(simhash):
                     self.logger.info(f"Page {tbd_url} is similar to an already seen page, skipping.")
                     continue
+                # Update stats after confirming uniqueness
                 self.stats.add_url(tbd_url)
                 self.stats.add_simhash(simhash)
                 self.stats.add_words(words)
                 self.stats.update_longest_page(tbd_url, len(words))
+                # Add scraped URLs to the frontier
                 scraped_urls = scraper.scraper(tbd_url, resp)
                 for scraped_url in scraped_urls:
                     self.frontier.add_url(scraped_url)
-            else:
-                self.logger.info(f"Skipping URL {tbd_url} due to status {resp.status}.")
-                continue
-
+    
     def get_words(self, content):
         soup = BeautifulSoup(content, 'lxml')
         text = soup.get_text()
