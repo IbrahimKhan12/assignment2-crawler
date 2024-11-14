@@ -1,11 +1,11 @@
+import heapq
 import os
 import shelve
 import threading
 import time
-from utils import get_logger, get_urlhash, normalize
 from scraper import is_valid
+from utils import get_logger, get_urlhash, normalize
 from urllib.parse import urldefrag, urlparse
-import heapq
 
 class Frontier(object):
     def __init__(self, config, restart):
@@ -15,8 +15,10 @@ class Frontier(object):
         self.condition = threading.Condition(self.lock)
         self.domain_queues = {}
         self.last_access_time = {}
-        self.available_domains = []  # Heap to track next available time per domain
+        self.available_domains = []
         self.save_lock = threading.Lock()
+        self.domains_in_heap = set()
+        self.busy_domains = set()
 
         if not os.path.exists(self.config.save_file) and not restart:
             self.logger.info(
@@ -58,13 +60,20 @@ class Frontier(object):
                 while self.available_domains:
                     next_available_time, domain = heapq.heappop(self.available_domains)
                     if domain not in self.domain_queues or not self.domain_queues[domain]:
+                        self.domains_in_heap.discard(domain)
                         continue  # No URLs left for this domain
+                    if domain in self.busy_domains:
+                        heapq.heappush(self.available_domains, (next_available_time, domain))
+                        continue  # Domain is busy
                     if current_time >= next_available_time:
                         url = self.domain_queues[domain].pop(0)
-                        self.last_access_time[domain] = current_time
-                        # If there are more URLs in the domain, push the next available time
+                        self.busy_domains.add(domain)
+                        # If there are more URLs in the domain, keep domain in heap
                         if self.domain_queues[domain]:
-                            heapq.heappush(self.available_domains, (current_time + self.config.time_delay, domain))
+                            heapq.heappush(self.available_domains, (next_available_time, domain))
+                            self.domains_in_heap.add(domain)
+                        else:
+                            self.domains_in_heap.discard(domain)
                         return url
                     else:
                         # Not yet time to crawl this domain
@@ -92,9 +101,21 @@ class Frontier(object):
             with self.save_lock:
                 self.save[urlhash] = (url, False)
                 self.save.sync()
-            if domain not in [d for _, d in self.available_domains]:
+            if domain not in self.domains_in_heap:
                 next_available = self.last_access_time.get(domain, 0)
                 heapq.heappush(self.available_domains, (next_available, domain))
+                self.domains_in_heap.add(domain)
+            self.condition.notify_all()
+
+    def mark_domain_done(self, domain):
+        with self.lock:
+            current_time = time.time()
+            self.last_access_time[domain] = current_time
+            self.busy_domains.discard(domain)
+            if self.domain_queues.get(domain) and domain not in self.domains_in_heap:
+                next_available_time = current_time + self.config.time_delay
+                heapq.heappush(self.available_domains, (next_available_time, domain))
+                self.domains_in_heap.add(domain)
             self.condition.notify_all()
 
     def mark_url_complete(self, url):
