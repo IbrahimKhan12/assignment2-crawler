@@ -58,11 +58,16 @@ def is_valid(url):
             return False
         
         # get rid of anything outside our crawling conditions
-        if not (parsed.netloc.endswith(".ics.uci.edu") or parsed.path.startswith("ics.uci.edu") or
-            parsed.netloc.endswith(".cs.uci.edu") or parsed.path.startswith("cs.uci.edu") or
-            parsed.netloc.endswith("informatics.uci.edu") or
-            parsed.netloc.endswith("stat.uci.edu") or
-            (parsed.netloc.endswith("today.uci.edu") and parsed.path.startswith("/department/information_computer_sciences"))):
+        domain = parsed.netloc.lower()
+        path = parsed.path.lower()
+
+        if not (
+            domain.endswith(".ics.uci.edu") or domain == "ics.uci.edu" or
+            domain.endswith(".cs.uci.edu") or domain == "cs.uci.edu" or
+            domain.endswith(".informatics.uci.edu") or domain == "informatics.uci.edu" or
+            domain.endswith(".stat.uci.edu") or domain == "stat.uci.edu" or
+            (domain == "today.uci.edu" and path.startswith("/department/information_computer_sciences"))
+        ):
             return False
         
         # get rid of traps i fell into
