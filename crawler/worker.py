@@ -8,6 +8,7 @@ from crawler.stats import Stats
 from bs4 import BeautifulSoup
 import re
 import nltk
+nltk.download('stopwords')
 from nltk.corpus import stopwords
 
 stop_words = set(stopwords.words('english'))
